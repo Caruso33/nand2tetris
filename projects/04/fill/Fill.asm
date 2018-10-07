@@ -12,3 +12,74 @@
 // the screen should remain fully clear as long as no key is pressed.
 
 // Put your code here.
+
+// start loop
+// RAM[24576] keyboard
+// if (!= 0)
+//  then black screen
+// else
+//  white screen
+// goto loop
+//
+// black screen:
+//  loop all rows
+//   RAM[address] = -1 // 1111111111111111111111
+//
+// white screen:
+//  loop all rows
+//   RAM[address] = 0 // 0000000000000000000000
+@INIT
+0;JMP
+
+(INIT)
+    @STATUS
+    M=-1 // initialize to turn screens black
+    D=0 // ARG passed
+
+    @SET_SCREEN
+    0;JMP
+
+(WAIT_FOR_KBD)
+    @KBD
+    D=M // D = Input of keyboard
+    @SET_SCREEN
+    D;JEQ // if no key, set screen to white (0)
+    D=-1 // if key, set screen to black (-1)
+
+(SET_SCREEN) // set D = new status before here
+    @ARG
+    M=D // ARG stored
+
+    @STATUS
+    D=D-M // D = ARG - STATUS > has something changed?
+
+    @WAIT_FOR_KBD
+    D;JEQ // wait for new input if no new STATUS
+
+    @ARG
+    D=M
+    
+    @STATUS
+    M=D // STATUS = ARG
+
+    @SCREEN
+    D=A // D = screen address
+    @8192   // (512 * 32) / 16
+    D=D+A // D = pass last screen address
+    @i
+    M=D // i = SCREEN address
+
+(SET)
+    @i
+    D=M-1
+    M=D // i -= 1
+    @WAIT_FOR_KBD
+    D;JLT // if i < 0 goto SET_SCREEN
+    
+    @STATUS
+    D=M
+    @i
+    A=M
+    M=D // M[screen address] = status
+    @SET
+    0;JMP
