@@ -39,13 +39,6 @@
     @SET_SCREEN
     0;JMP
 
-(WAIT_FOR_KBD)
-    @KBD
-    D=M // D = Input of keyboard
-    @SET_SCREEN
-    D;JEQ // if no key, set screen to white (0)
-    D=-1 // if key, set screen to black (-1)
-
 (SET_SCREEN) // set D = new status before here
     @ARG
     M=D // ARG stored
@@ -67,7 +60,20 @@
     @8192   // (512 * 32) / 16
     D=D+A // D = pass last screen address
     @i
-    M=D // i = SCREEN address
+    M=D // i = last SCREEN address
+
+    @SET
+    0;JMP
+
+(WAIT_FOR_KBD)
+    @KBD
+    D=M // D = Input of keyboard
+    @SET_SCREEN
+    D;JEQ // if no key, set screen to white (0)
+    D=-1 // if key, set screen to black (-1)
+    
+    @SET_SCREEN
+    0;JMP
 
 (SET)
     @i
@@ -79,7 +85,7 @@
     @STATUS
     D=M
     @i
-    A=M
+    A=M // indirect, Screen[row*32 + col/16] to set pixel
     M=D // M[screen address] = status
     @SET
     0;JMP
